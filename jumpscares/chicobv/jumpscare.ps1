@@ -9,16 +9,15 @@
 # ================================================================================================
 
 # IMAGEN: Pegá aquí el enlace RAW de tu imagen.
-$image = "https://raw.githubusercontent.com/USUARIO/REPOSITORIO/main/imagen.png"
 
-# AUDIO: Pegá aquí el enlace RAW de tu archivo WAV.
-$wav = "https://raw.githubusercontent.com/USUARIO/REPOSITORIO/main/sonido.wav"
+# IMAGEN DE GITHUB
+$image = "https://raw.githubusercontent.com/joaquincizmadija/fllipo/main/jumpscares/chicobv/1713512540801.jpg"
 
-# ================================================================================================
-# 2. RUTAS DE DESCARGA
-# ================================================================================================
+# AUDIO DE GITHUB
+$wav = "https://raw.githubusercontent.com/joaquincizmadija/fllipo/main/jumpscares/chicobv/female_scream.wav"
 
-$imagePath = Join-Path $env:TEMP "jumpscare_image.png"
+# RUTAS TEMPORALES
+$imagePath = Join-Path $env:TEMP "jumpscare_image.jpg"
 $wavPath = Join-Path $env:TEMP "jumpscare_sound.wav"
 
 # ================================================================================================
