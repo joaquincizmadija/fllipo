@@ -3,21 +3,24 @@ REM ==========================================
 REM CHICOBV - FLIPPER ZERO
 REM ==========================================
 
-REM Abrir Ejecutar
 DELAY 1500
 GUI r
 DELAY 1000
 
-REM Abrir PowerShell
 STRING powershell
 ENTER
 DELAY 2000
 
-REM Descargar jumpscare.ps1 desde GitHub
-STRING Invoke-WebRequest -Uri "https://raw.githubusercontent.com/joaquincizmadija/fllipo/main/jumpscares/chicobv/jumpscare.ps1" -OutFile "$env:TEMP\jumpscare.ps1"
+REM Guardar direccion de GitHub
+STRING $u='https://raw.githubusercontent.com/joaquincizmadija/fllipo/main/jumpscares/chicobv/jumpscare.ps1'
 ENTER
-DELAY 4000
+DELAY 700
 
-REM Abrir el archivo descargado para revisarlo
-STRING notepad "$env:TEMP\jumpscare.ps1"
+REM Descargar el archivo
+STRING Invoke-WebRequest -Uri $u -OutFile ($env:TEMP+'\jumpscare.ps1')
+ENTER
+DELAY 5000
+
+REM Abrir el archivo descargado
+STRING notepad ($env:TEMP+'\jumpscare.ps1')
 ENTER
