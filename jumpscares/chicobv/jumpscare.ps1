@@ -1,57 +1,52 @@
 
-####################################################################################################
-#                                      JUMPSCARE PERSONALIZADO
-#                                      Windows 10 / Windows 11
-####################################################################################################
+# ########################################################################
+# Title       : JumpScare
+# Author      : Adaptacion para Flipper Zero
+# Version     : 1.0
+# Target      : Windows 10 / 11
+# Mode        : HID
+# ########################################################################
 
-# ================================================================================================
-# 1. CONFIGURACIÓN: COLOCÁ AQUÍ TUS ENLACES DE GITHUB
-# ================================================================================================
+<#
+.DESCRIPTION
+Descarga una imagen y un sonido desde GitHub.
+Espera el movimiento del mouse.
+Cambia el fondo de pantalla y reproduce el sonido.
+#>
 
-# IMAGEN: Pegá aquí el enlace RAW de tu imagen.
+# ------------------------------------------------------------------------
+# DESCARGA DE ARCHIVOS
+# ------------------------------------------------------------------------
 
-# IMAGEN DE GITHUB
 $image = "https://raw.githubusercontent.com/joaquincizmadija/fllipo/main/jumpscares/chicobv/1713512540801.jpg"
 
-# AUDIO DE GITHUB
 $wav = "https://raw.githubusercontent.com/joaquincizmadija/fllipo/main/jumpscares/chicobv/female_scream.wav"
 
-# RUTAS TEMPORALES
 $imagePath = Join-Path $env:TEMP "jumpscare_image.jpg"
 $wavPath = Join-Path $env:TEMP "jumpscare_sound.wav"
 
-# ================================================================================================
-# 3. DESCARGAR ARCHIVOS
-# ================================================================================================
+Write-Host "Descargando imagen..."
+Invoke-WebRequest -Uri $image -OutFile $imagePath
 
-try {
-    Write-Host "Descargando imagen..."
-    Invoke-WebRequest -Uri $image -OutFile $imagePath -ErrorAction Stop
+Write-Host "Descargando sonido..."
+Invoke-WebRequest -Uri $wav -OutFile $wavPath
 
-    Write-Host "Descargando audio..."
-    Invoke-WebRequest -Uri $wav -OutFile $wavPath -ErrorAction Stop
-
-    if (!(Test-Path $imagePath) -or !(Test-Path $wavPath)) {
-        throw "No se pudieron descargar los archivos."
-    }
-}
-catch {
-    Write-Host "Error al descargar los archivos: $_" -ForegroundColor Red
-    exit
+if (!(Test-Path $imagePath) -or !(Test-Path $wavPath)) {
+    throw "No se pudieron descargar los archivos."
 }
 
-# ================================================================================================
-# 4. FUNCIÓN PARA CAMBIAR EL FONDO DE PANTALLA
-# ================================================================================================
+# ------------------------------------------------------------------------
+# CAMBIAR FONDO DE PANTALLA
+# ------------------------------------------------------------------------
 
-function Set-WallPaper {
+Function Set-WallPaper {
 
     param (
         [Parameter(Mandatory=$true)]
         [string]$Image,
 
-        [ValidateSet('Fill','Fit','Stretch','Tile','Center','Span')]
-        [string]$Style = 'Fill'
+        [ValidateSet('Fill', 'Fit', 'Stretch', 'Tile', 'Center', 'Span')]
+        [string]$Style = 'Center'
     )
 
     $WallpaperStyle = switch ($Style) {
@@ -63,48 +58,46 @@ function Set-WallPaper {
         "Span"    { "22" }
     }
 
+    $TileWallpaper = if ($Style -eq "Tile") { "1" } else { "0" }
+
     Set-ItemProperty -Path "HKCU:\Control Panel\Desktop" `
         -Name WallpaperStyle -Value $WallpaperStyle
 
     Set-ItemProperty -Path "HKCU:\Control Panel\Desktop" `
-        -Name TileWallpaper -Value $(if ($Style -eq "Tile") { "1" } else { "0" })
+        -Name TileWallpaper -Value $TileWallpaper
 
     Add-Type -TypeDefinition @"
 using System;
 using System.Runtime.InteropServices;
 
-public class WallpaperParams {
-    [DllImport("User32.dll", CharSet = CharSet.Unicode)]
+public class JumpScareWallpaper {
+    [DllImport("user32.dll", CharSet = CharSet.Unicode)]
     public static extern int SystemParametersInfo(
-        int uAction,
-        int uParam,
-        string lpvParam,
-        int fuWinIni
+        int action, int param, string image, int flags
     );
 }
 "@
 
-    [WallpaperParams]::SystemParametersInfo(
-        0x0014,
-        0,
-        $Image,
-        0x01 -bor 0x02
+    [JumpScareWallpaper]::SystemParametersInfo(
+        0x0014, 0, $Image, 0x01 -bor 0x02
     ) | Out-Null
 }
 
-# ================================================================================================
-# 5. ESPERAR MOVIMIENTO DEL MOUSE
-# ================================================================================================
+# ------------------------------------------------------------------------
+# ESPERAR MOVIMIENTO DEL MOUSE
+# ------------------------------------------------------------------------
 
-function Pause-Script {
+Function Pause-Script {
 
     Add-Type -AssemblyName System.Windows.Forms
 
+    Write-Host "Esperando movimiento del mouse..."
+
     $originalPOS = [System.Windows.Forms.Cursor]::Position
 
-    Write-Host "JumpScare preparado. Esperando movimiento del mouse..."
-
     while ($true) {
+
+        Start-Sleep -Seconds 1
 
         $currentPOS = [System.Windows.Forms.Cursor]::Position
 
@@ -114,52 +107,41 @@ function Pause-Script {
         ) {
             break
         }
-
-        Start-Sleep -Milliseconds 300
     }
 }
 
-# ================================================================================================
-# 6. REPRODUCIR AUDIO
-# ================================================================================================
+# ------------------------------------------------------------------------
+# REPRODUCIR ARCHIVO WAV
+# ------------------------------------------------------------------------
 
-function Play-WAV {
+Function Play-WAV {
 
     $PlayWav = New-Object System.Media.SoundPlayer
-
     $PlayWav.SoundLocation = $wavPath
-
     $PlayWav.Load()
-
     $PlayWav.PlaySync()
 }
 
-# ================================================================================================
-# 7. EJECUCIÓN DEL JUMPSCARE
-# ================================================================================================
+# ------------------------------------------------------------------------
+# EJECUCION PRINCIPAL
+# ------------------------------------------------------------------------
 
-try {
+Pause-Script
 
-    # Esperar movimiento del mouse
-    Pause-Script
+Write-Host "Movimiento detectado."
+Write-Host "Cambiando fondo de pantalla..."
 
-    # Cambiar fondo de pantalla
-    Set-WallPaper -Image $imagePath -Style Fill
+Set-WallPaper -Image $imagePath -Style Center
 
-    # Reproducir sonido
-    Play-WAV
+Write-Host "Reproduciendo sonido..."
 
-    Write-Host "JumpScare finalizado."
+Play-WAV
 
-}
-catch {
-    Write-Host "Error durante la ejecución: $_" -ForegroundColor Red
-}
+Write-Host "JumpScare finalizado."
 
-# ================================================================================================
-# 8. FINALIZACIÓN
-# ================================================================================================
+# ------------------------------------------------------------------------
+# LIMPIEZA: SOLO ARCHIVOS CREADOS POR ESTE SCRIPT
+# ------------------------------------------------------------------------
 
-# Eliminar únicamente los archivos descargados por este script.
-
-Remove-Item $imagePath, $wavPath -Force -ErrorAction SilentlyContinue
+Remove-Item $imagePath -Force -ErrorAction SilentlyContinue
+Remove-Item $wavPath -Force -ErrorAction SilentlyContinue
